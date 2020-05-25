@@ -25,72 +25,68 @@ class GameViewController: UIViewController {
     
     @IBOutlet weak var shareButton: UIButton!
     
-    var userDefault = NSUserDefaults.standardUserDefaults()
+    var userDefault = UserDefaults.standard
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        bestScore = userDefault.integerForKey("bestScore")
+        bestScore = userDefault.integer(forKey: "bestScore")
         
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "gameOver", name: "gameOverNotification", object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.gameOver), name: NSNotification.Name(rawValue: "gameOverNotification"), object: nil)
         
 
-        var scene = GameScene(size: CGSizeMake(1024, 768))
+        let scene = GameScene(size: CGSize(width: 1024, height: 768))
         // Configure the view.
-        let skView = self.view as SKView
+        let skView = self.view as! SKView
         
         /* Sprite Kit applies additional optimizations to improve rendering performance */
         skView.ignoresSiblingOrder = true
         
         /* Set the scale mode to scale to fit the window */
-        scene.scaleMode = .AspectFill
+        scene.scaleMode = .aspectFill
         
         skView.presentScene(scene)
         
     }
 
-    override func shouldAutorotate() -> Bool {
-        return true
-    }
+    override var shouldAutorotate: Bool {
+           return true
+       }
 
-    override func supportedInterfaceOrientations() -> Int {
-        if UIDevice.currentDevice().userInterfaceIdiom == .Phone {
-            return Int(UIInterfaceOrientationMask.AllButUpsideDown.rawValue)
-        } else {
-            return Int(UIInterfaceOrientationMask.All.rawValue)
-        }
-    }
+       override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+           if UIDevice.current.userInterfaceIdiom == .phone {
+               return .allButUpsideDown
+           } else {
+               return .all
+           }
+       }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Release any cached data, images, etc that aren't in use.
     }
-
-    override func prefersStatusBarHidden() -> Bool {
-        return true
-    }
     
     @IBAction func pauseGame(sender: UIButton) {
-        var skView = self.view as SKView
+        let skView = self.view as! SKView
         if sender.titleLabel?.text == "暂停"{
-            sender.setTitle("继续", forState: UIControlState.Normal)
-            skView.paused = true
-            skView.scene?.userInteractionEnabled = false
+            sender.setTitle("继续", for: .normal)
+            skView.isPaused = true
+            skView.scene?.isUserInteractionEnabled = false
         }else{
-            sender.setTitle("暂停", forState: UIControlState.Normal)
-            skView.paused = false
-            skView.scene?.userInteractionEnabled = true
+            sender.setTitle("暂停", for: .normal)
+            skView.isPaused = false
+            skView.scene?.isUserInteractionEnabled = true
         }
         
         
     }
     
-    func gameOver(){
-        gamePauseView.hidden = true
-        gameOverView.hidden = false
+    @objc func gameOver(){
+        gamePauseView.isHidden = true
+        gameOverView.isHidden = false
         
         if totalScore > bestScore{
-            userDefault.setInteger(totalScore, forKey: "bestScore")
+            userDefault.set(totalScore, forKey: "bestScore")
             userDefault.synchronize()
             bestScore = totalScore
         }
@@ -101,19 +97,19 @@ class GameViewController: UIViewController {
     }
     
     @IBAction func restartGame(sender: UIButton) {
-        gameOverView.hidden = true
-        gamePauseView.hidden = false
+        gameOverView.isHidden = true
+        gamePauseView.isHidden = false
     
         
-        var scene = GameScene(size: CGSizeMake(1024, 768))
+        let scene = GameScene(size: CGSize(width: 1024, height: 768))
         // Configure the view.
-        let skView = self.view as SKView
+        let skView = self.view as! SKView
         
         /* Sprite Kit applies additional optimizations to improve rendering performance */
         skView.ignoresSiblingOrder = true
         
         /* Set the scale mode to scale to fit the window */
-        scene.scaleMode = .AspectFill
+        scene.scaleMode = .aspectFill
         
         skView.presentScene(scene)
         

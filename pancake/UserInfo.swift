@@ -12,17 +12,17 @@ var globalUserData = UserInfo()
 
 class UserInfo{
     
-    var userDefault = NSUserDefaults.standardUserDefaults()
+    var userDefault = UserDefaults.standard
     
     var removeAd = false
     
     init(){
-        removeAd = userDefault.boolForKey("removeAd")
+        removeAd = userDefault.bool(forKey: "removeAd")
     }
     
     func removeAdver(){
         removeAd = true
-        userDefault.setBool(removeAd, forKey: "removeAd")
+        userDefault.set(removeAd, forKey: "removeAd")
         userDefault.synchronize()
     }
     

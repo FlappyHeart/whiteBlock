@@ -30,7 +30,7 @@ class GameScene: SKScene {
     var timeCounter = 20
     
     
-    var userDefault = NSUserDefaults.standardUserDefaults()
+    var userDefault = UserDefaults.standard
     
     var sceneZero:CGPoint!
     var enemyWidth:CGFloat!
@@ -45,19 +45,20 @@ class GameScene: SKScene {
     var moveABit:SKAction!
     var fadeOut:SKAction!
     
-    override func didMoveToView(view: SKView) {
+    override func didMove(to view: SKView) {
         //some useful constants
         enemyWidth = enemyTexture.size().width
         enemyHeight = enemyTexture.size().height
-        moveABit = SKAction.moveBy(CGVectorMake(0, -self.enemyHeight), duration: 0.1)
-        fadeOut = SKAction.sequence([SKAction.fadeOutWithDuration(0.3),SKAction.removeFromParent()])
+        moveABit = SKAction.move(by: CGVector(dx: 0, dy: -self.enemyHeight), duration: 0.1)
+        fadeOut = SKAction.sequence([SKAction.fadeOut(withDuration: 0.3),SKAction.removeFromParent()])
         
-        sceneZero = CGPointMake(self.frame.width * 0.5 - enemyWidth * 2 + enemyWidth * 0.5, self.frame.height * 0.33)
+        let temp = self.frame.width * 0.5 - enemyWidth * 2.5
+        sceneZero = CGPoint(x: temp, y: self.frame.height * 0.33)
         
         //init HUD
         scoreLabel = SKLabelNode()
-        scoreLabel.position = CGPointMake(self.frame.width * 0.5, self.frame.height * 0.9)
-        scoreLabel.fontColor = SKColor.blackColor()
+        scoreLabel.position = CGPoint(x: self.frame.width * 0.5, y: self.frame.height * 0.9)
+        scoreLabel.fontColor = .black
         scoreLabel.fontName = "Gasalt-Black"
         scoreLabel.fontSize = 52
         scoreLabel.zPosition = 5
@@ -66,17 +67,17 @@ class GameScene: SKScene {
         self.addChild(scoreLabel)
         
         timerLabel = SKLabelNode()
-        timerLabel.position = CGPointMake(self.frame.width * 0.65, self.frame.height * 0.9)
-        timerLabel.fontColor = SKColor.blackColor()
+        timerLabel.position = CGPoint(x: self.frame.width * 0.65, y: self.frame.height * 0.9)
+        timerLabel.fontColor = .black
         timerLabel.fontName = "Gasalt-Black"
         timerLabel.fontSize = 52
         timerLabel.zPosition = 5
         timerLabel.text = "\(timeCounter)"
         
         self.addChild(timerLabel)
-        timerLabel.runAction(SKAction.repeatActionForever(SKAction.sequence([SKAction.waitForDuration(1.0),SKAction.runBlock({
+        timerLabel.run(SKAction.repeatForever(SKAction.sequence([SKAction.wait(forDuration: 1.0),SKAction.run({
             if self.timeCounter > 0{
-                self.timeCounter--
+                self.timeCounter -= 1
                 self.timerLabel.text = "\(self.timeCounter)"
             }else{
                 self.gameOver()
@@ -86,71 +87,73 @@ class GameScene: SKScene {
         
         })])))
         
-        var background = SKSpriteNode(texture: backgroundTexture)
+        let background = SKSpriteNode(texture: backgroundTexture)
 //        background.anchorPoint = CGPointZero
-        background.position = CGPointMake(self.frame.width * 0.5, self.frame.height * 0.5)
+        background.position = CGPoint(x: self.frame.width * 0.5, y: self.frame.height * 0.5)
         self.addChild(background)
         
-        for var i = 0; i < numberOfGroup; i++ {
+        for i in 0...numberOfGroup {
             enemy = SKSpriteNode(texture: enemyTexture)
-            enemyGroup.addObject(enemy)
+            enemyGroup.add(enemy)
             
             rects.addChild(enemy)
-            enemy.position = CGPointMake(randomPointX(), enemyHeight * CGFloat(i))
+            enemy.position = CGPoint(x: randomPointX(), y: enemyHeight * CGFloat(i))
             
             egg = SKSpriteNode(texture: eggTexture)
-            eggGroup.addObject(egg)
+            eggGroup.add(egg)
         }
         
         rects.position = sceneZero
         self.addChild(rects)
-        eggs.position = CGPointMake(0, 0)
+        eggs.position = CGPoint(x: 0, y: 0)
         eggs.zPosition = 5
         self.addChild(eggs)
         
-        var house = SKSpriteNode(texture: houseTexture)
-        house.position = CGPointMake(self.frame.width * 0.5, self.frame.height * 0.12)
+        let house = SKSpriteNode(texture: houseTexture)
+        house.position = CGPoint(x: self.frame.width * 0.5, y: self.frame.height * 0.12)
         self.addChild(house)
         
         /* Setup your scene here */
-        self.backgroundColor = SKColor.grayColor()
+        self.backgroundColor = .gray
         
     }
     
-    override func touchesBegan(touches: NSSet, withEvent event: UIEvent) {
-        /* Called when a touch begins */
-        
-        var location:CGPoint! = touches.anyObject()?.locationInNode(self)
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+            /* Called when a touch begins */
+    //        let _:CGPoint! = (touches.first) as AnyObject as! CGPoint;).location(in view: self)
+            
+    //        for touch: AnyObject in touches {
+        let location:CGPoint! = (touches.first as AnyObject).location(in: self)
         if location.y > sceneZero.y + enemyHeight * 0.5{
             return
         }
-        var touch = location
+        let touch = location
         
-        location.x -= rects.position.x
-        location.y -= rects.position.y
+//        location.x -= rects.position.x
+//        location.y -= rects.position.y
         
-        var enemyTmp = enemyGroup.objectAtIndex(currentIndex) as SKSpriteNode
+        let enemyTmp = enemyGroup.object(at: currentIndex) as! SKSpriteNode
         
-        if enemyTmp.containsPoint(location){
-            self.runAction(hitSound)
+        if enemyTmp.contains(location){
+            self.run(hitSound)
             
-            var egg = eggGroup.objectAtIndex(currentIndex) as SKSpriteNode
+            let egg = eggGroup.object(at: currentIndex) as! SKSpriteNode
             egg.alpha = 1
-            egg.position = touch
-            egg.runAction(fadeOut)
+            egg.position = touch ?? CGPoint(x: 0, y: 0)
+            egg.run(fadeOut)
             eggs.addChild(egg)
             
-            score++
+            score += 1
             scoreLabel.text = "\(score)"
             
             enemyTmp.position.y += enemyHeight * CGFloat(numberOfGroup)
             enemyTmp.position.x = randomPointX()
             
             for child in enemyGroup{
-                child.runAction(self.moveABit)
+                (child as AnyObject).run(self.moveABit)
             }
             
-            currentIndex++
+            currentIndex += 1
             if currentIndex == numberOfGroup{
                 currentIndex = 0
             }
@@ -162,13 +165,13 @@ class GameScene: SKScene {
     
     func gameOver(){
         totalScore = score
-        self.userInteractionEnabled = false
-        self.runAction(SKAction.sequence([failSound,SKAction.runBlock({
-            NSNotificationCenter.defaultCenter().postNotificationName("gameOverNotification", object: nil)
+        self.isUserInteractionEnabled = false
+        run(SKAction.sequence([failSound,SKAction.run({
+            NotificationCenter.default.post(name: NSNotification.Name(rawValue: "gameOverNotification"), object: nil)
         })]))
     }
    
-    override func update(currentTime: CFTimeInterval) {
+    override func update(_ currentTime: CFTimeInterval) {
         /* Called before each frame is rendered */
     }
     
